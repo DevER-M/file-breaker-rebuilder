@@ -1,0 +1,7 @@
+[project]
+name = "chunkshasher"
+version = "0.1.0"
+description = "breaks down big binary files and hashes it"
+readme = "README.md"
+requires-python = ">=3.13.1"
+dependencies = []
