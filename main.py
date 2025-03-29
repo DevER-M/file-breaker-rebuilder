@@ -1,13 +1,17 @@
-from hashlib import sha1
+from collections.abc import Callable, Buffer
+from _hashlib import HASH
 
 
-def chunks(filepath:str,chunksize:int):
-    with open(filepath,'rb') as f:
-        while f.read(1) != b'':
-            print(sha1(f.read(chunksize)).hexdigest())
-        
+def chunks(filepath: str, chunksize: int, hasher: Callable[[Buffer], HASH]):
+    with open(filepath, "rb") as f:
+        while f.read(1) != b"":
+            print(hasher(f.read(chunksize)).hexdigest())
+
+
 def tests(filepath):
-    chunks(filepath,1024)
+    from hashlib import sha1
+    chunks(filepath, 1024,sha1)
 
-if __name__=='__main__':
-    tests('randombin')
+
+if __name__ == "__main__":
+    tests("randombin")
