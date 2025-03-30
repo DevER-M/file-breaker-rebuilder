@@ -63,15 +63,10 @@ def tests(filepath):
         rebuild(li)
 
 
-@tryex
-def sa(a):
-    return a / 0
-
 
 if __name__ == "__main__":
     from time import time
 
-    sa(1)
     c = time()
     tests("randombin")
     print(time() - c)
