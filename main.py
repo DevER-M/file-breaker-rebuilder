@@ -1,8 +1,21 @@
-from _hashlib import HASH
+import pickle
+import logging
 from functools import partial
 from os import path, makedirs
-import pickle
+from traceback import format_exc
+
 from collections.abc import Callable
+from _hashlib import HASH
+
+
+def tryex(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            logging.error(format_exc())
+
+    return wrapper
 
 
 def chunk_hasher(filepath: str, chunksize: int, hasher: Callable[[bytes], HASH]):
@@ -14,6 +27,7 @@ def chunk_hasher(filepath: str, chunksize: int, hasher: Callable[[bytes], HASH])
             yield (hasher(chunk), chunk)
 
 
+@tryex
 def chunkify(filepath: str, chunksize: int, hasher: Callable[[bytes], HASH]):
     folder = f"{path.basename(filepath)}-chunks"
     hashes = [path.basename(filepath)]
@@ -27,13 +41,17 @@ def chunkify(filepath: str, chunksize: int, hasher: Callable[[bytes], HASH]):
 
     with open(f"{folder}/lookup", "wb+") as f:
         f.write(pickle.dumps(hashes))
+    return hashes
 
 
+@tryex
 def rebuild(lookup: list[str]):
-    with (open(f"{lookup[0]}", "+ab")             as f,
-         open(f"{lookup[0]}-chunks/{hash}", "rb") as data):
+    if path.exists(lookup[0]):
+        raise Exception("file already exists")
+    with open(f"{lookup[0]}", "+ab") as f:
         for hash in lookup[1:]:
-            f.write(data.read())
+            with open(f"{lookup[0]}-chunks/{hash}", "rb") as data:
+                f.write(data.read())
 
 
 def tests(filepath):
@@ -45,9 +63,15 @@ def tests(filepath):
         rebuild(li)
 
 
+@tryex
+def sa(a):
+    return a / 0
+
+
 if __name__ == "__main__":
     from time import time
 
+    sa(1)
     c = time()
     tests("randombin")
     print(time() - c)
